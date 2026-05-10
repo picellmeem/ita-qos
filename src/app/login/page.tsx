@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
+import ColorfulBackground from "@/components/ColorfulBackground";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,8 +27,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-50 px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center bg-white px-4">
+      <ColorfulBackground />
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-6 text-center">
           <div className="text-2xl font-bold text-brand-900">ITA-QOS</div>
           <div className="mt-1 text-xs text-slate-500">
@@ -35,7 +37,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <form onSubmit={submit} className="card space-y-4">
+        <form
+          onSubmit={submit}
+          className="space-y-4 rounded-2xl border border-white/60 bg-white/75 p-6 shadow-2xl backdrop-blur-xl"
+        >
           <h1 className="text-lg font-semibold text-brand-900">เข้าสู่ระบบ</h1>
 
           {err && (
