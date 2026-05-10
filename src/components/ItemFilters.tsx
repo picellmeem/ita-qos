@@ -29,6 +29,9 @@ export default function ItemFilters({
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | StatusColor>("all");
 
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
   const filtered = useMemo(() => {
     return rows.filter((r) => {
       if (filter !== "all" && r.status_color !== filter) return false;
@@ -42,6 +45,13 @@ export default function ItemFilters({
       );
     });
   }, [rows, q, filter]);
+
+  // reset to page 1 when filter/search changes
+  useMemo(() => setPage(1), [q, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div className="card mt-6">
@@ -95,7 +105,7 @@ export default function ItemFilters({
                 </td>
               </tr>
             ) : (
-              filtered.map((r) => (
+              paged.map((r) => (
                 <tr key={r.item_id} className="border-t border-brand-100 hover:bg-brand-50/40">
                   <td className="px-4 py-3">
                     <span className="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-xs font-semibold text-brand-500">
@@ -126,8 +136,32 @@ export default function ItemFilters({
         </table>
       </div>
 
-      <div className="mt-3 text-xs text-slate-400">
-        แสดง {filtered.length} จาก {rows.length} รายการ
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="text-slate-400">
+          แสดง {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} จาก {filtered.length} รายการ
+          {filtered.length !== rows.length && ` (กรองจาก ${rows.length})`}
+        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={safePage === 1}
+              className="rounded-md border border-brand-100 px-2.5 py-1 font-semibold text-slate-600 hover:bg-brand-50 disabled:opacity-40"
+            >
+              ←
+            </button>
+            <span className="px-2 font-semibold text-slate-700">
+              {safePage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safePage === totalPages}
+              className="rounded-md border border-brand-100 px-2.5 py-1 font-semibold text-slate-600 hover:bg-brand-50 disabled:opacity-40"
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -20,9 +20,10 @@ const sections = [
   {
     title: "ระบบ",
     items: [
-      { href: "/nfc",    label: "NFC Mapping", icon: "📱" },
-      { href: "/import", label: "Import Data", icon: "📥" },
-      { href: "/logs",   label: "Audit Log",   icon: "📋" },
+      { href: "/nfc",             label: "NFC Mapping",   icon: "📱" },
+      { href: "/print/stickers",  label: "พิมพ์ Stickers", icon: "🏷" },
+      { href: "/import",          label: "Import Data",    icon: "📥" },
+      { href: "/logs",            label: "Audit Log",      icon: "📋" },
     ],
   },
 ];

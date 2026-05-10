@@ -31,6 +31,7 @@ export async function middleware(req: NextRequest) {
   const isPublic =
     path === "/" ||
     path === "/login" ||
+    path === "/signup" ||
     path.startsWith("/scan/");
 
   if (!user && !isPublic) {

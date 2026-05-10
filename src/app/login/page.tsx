@@ -77,8 +77,11 @@ export default function LoginPage() {
             {busy ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </button>
 
-          <p className="text-center text-xs text-slate-400">
-            ใช้บัญชีจาก Supabase Auth — ดูวิธีเพิ่มผู้ใช้งานใน README
+          <p className="text-center text-xs text-slate-500">
+            ยังไม่มีบัญชี?{" "}
+            <a href="/signup" className="font-semibold text-brand-500 hover:underline">
+              สมัครสมาชิก
+            </a>
           </p>
         </form>
       </div>
