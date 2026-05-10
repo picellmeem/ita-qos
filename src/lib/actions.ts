@@ -8,20 +8,20 @@ function buildLocation(parts: (string | null | undefined)[]) {
   return code || "UNSPECIFIED";
 }
 
-export async function createPharmacyItem(formData: FormData) {
+export async function createPharmacyItem(formData: FormData): Promise<void> {
   const f = (k: string) => (formData.get(k) as string | null) || null;
   const supabase = await createClient();
 
   const item_id = f("item_id");
   const item_name = f("item_name");
-  if (!item_id || !item_name) return { error: "ต้องระบุ Item ID และชื่อยา" };
+  if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อยา");
 
   const location_code = buildLocation([f("zone"), f("shelf")]);
 
   const { error: locErr } = await supabase
     .from("locations")
     .upsert({ location_code, zone: f("zone"), shelf_or_line: f("shelf") }, { onConflict: "location_code" });
-  if (locErr) return { error: locErr.message };
+  if (locErr) throw new Error(locErr.message);
 
   const { error: itemErr } = await supabase.from("items").insert({
     item_id,
@@ -30,7 +30,7 @@ export async function createPharmacyItem(formData: FormData) {
     category: f("category"),
     location_code,
   });
-  if (itemErr) return { error: itemErr.message };
+  if (itemErr) throw new Error(itemErr.message);
 
   const { error: pErr } = await supabase.from("pharmacy_items").insert({
     item_id,
@@ -46,7 +46,7 @@ export async function createPharmacyItem(formData: FormData) {
     storage_condition: f("storage_condition"),
     note: f("note"),
   });
-  if (pErr) return { error: pErr.message };
+  if (pErr) throw new Error(pErr.message);
 
   await supabase.from("audit_logs").insert({
     item_id,
@@ -59,13 +59,13 @@ export async function createPharmacyItem(formData: FormData) {
   redirect(`/pharmacy/${item_id}`);
 }
 
-export async function createMaintenanceItem(formData: FormData) {
+export async function createMaintenanceItem(formData: FormData): Promise<void> {
   const f = (k: string) => (formData.get(k) as string | null) || null;
   const supabase = await createClient();
 
   const item_id = f("item_id");
   const item_name = f("item_name");
-  if (!item_id || !item_name) return { error: "ต้องระบุ Item ID และชื่อเครื่อง" };
+  if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อเครื่อง");
 
   const location_code = buildLocation([f("area"), f("line"), f("position")]);
 
@@ -83,7 +83,7 @@ export async function createMaintenanceItem(formData: FormData) {
     category: f("machine_type"),
     location_code,
   });
-  if (itemErr) return { error: itemErr.message };
+  if (itemErr) throw new Error(itemErr.message);
 
   const { error: mErr } = await supabase.from("maintenance_items").insert({
     item_id,
@@ -98,7 +98,7 @@ export async function createMaintenanceItem(formData: FormData) {
     responsible_team: f("responsible_team"),
     maintenance_note: f("maintenance_note"),
   });
-  if (mErr) return { error: mErr.message };
+  if (mErr) throw new Error(mErr.message);
 
   await supabase.from("audit_logs").insert({
     item_id,
