@@ -1,10 +1,13 @@
 import Link from "next/link";
+import ColorfulBackground from "@/components/ColorfulBackground";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-sky-50">
+    <div className="relative min-h-screen overflow-hidden bg-white">
+      <ColorfulBackground />
+      <div className="relative z-10">
       {/* Top Nav */}
-      <nav className="sticky top-0 z-20 border-b border-brand-100/60 bg-white/80 backdrop-blur">
+      <nav className="sticky top-0 z-20 border-b border-white/60 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-sky-400 text-base text-white">
@@ -241,12 +244,13 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-brand-100 bg-white py-6">
+      <footer className="border-t border-brand-100 bg-white/70 py-6 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 text-center text-xs text-slate-400 md:px-6">
           ITA-QOS · Integrated Temporal Analytics for Quality &amp; Operational Safety<br />
           Built with Next.js · Supabase · Tailwind CSS
         </div>
       </footer>
+      </div>
     </div>
   );
 }
