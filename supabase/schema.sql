@@ -207,8 +207,8 @@ $$;
 create policy "profiles_self_read" on profiles for select
   using (user_id = auth.uid() or current_role_code() = 'admin');
 
--- Items: any authenticated user can read; only matching module editor or admin can write
-create policy "items_read_auth" on items for select to authenticated using (true);
+-- Items: anyone (incl. anon for /scan public view) can read active items; writes are role-restricted
+create policy "items_public_read" on items for select using (active_flag = true);
 create policy "items_write_pharmacy" on items for all to authenticated
   using (module_type = 'pharmacy' and current_role_code() in ('editor_pharmacy','admin'))
   with check (module_type = 'pharmacy' and current_role_code() in ('editor_pharmacy','admin'));
@@ -216,22 +216,22 @@ create policy "items_write_maintenance" on items for all to authenticated
   using (module_type = 'maintenance' and current_role_code() in ('editor_maintenance','admin'))
   with check (module_type = 'maintenance' and current_role_code() in ('editor_maintenance','admin'));
 
-create policy "pharmacy_read"  on pharmacy_items for select to authenticated using (true);
+create policy "pharmacy_public_read" on pharmacy_items for select using (true);
 create policy "pharmacy_write" on pharmacy_items for all to authenticated
   using (current_role_code() in ('editor_pharmacy','admin'))
   with check (current_role_code() in ('editor_pharmacy','admin'));
 
-create policy "maintenance_read"  on maintenance_items for select to authenticated using (true);
+create policy "maintenance_public_read" on maintenance_items for select using (true);
 create policy "maintenance_write" on maintenance_items for all to authenticated
   using (current_role_code() in ('editor_maintenance','admin'))
   with check (current_role_code() in ('editor_maintenance','admin'));
 
-create policy "locations_read"  on locations for select to authenticated using (true);
+create policy "locations_public_read" on locations for select using (true);
 create policy "locations_write" on locations for all to authenticated
   using (current_role_code() in ('editor_pharmacy','editor_maintenance','admin'))
   with check (current_role_code() in ('editor_pharmacy','editor_maintenance','admin'));
 
-create policy "nfc_read"  on nfc_mappings for select to authenticated using (true);
+create policy "nfc_public_read" on nfc_mappings for select using (mapping_status = 'active');
 create policy "nfc_write" on nfc_mappings for all to authenticated
   using (current_role_code() in ('editor_pharmacy','editor_maintenance','admin'))
   with check (current_role_code() in ('editor_pharmacy','editor_maintenance','admin'));
