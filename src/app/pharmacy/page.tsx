@@ -3,6 +3,7 @@ import AppShell from "@/components/AppShell";
 import ItemFilters from "@/components/ItemFilters";
 import { SummaryCards } from "@/components/SummaryCards";
 import DeleteAllButton from "@/components/DeleteAllButton";
+import ExportButton from "@/components/ExportButton";
 import { StatusPieChart, CategoryBarChart, TimelineAreaChart } from "@/components/DashboardCharts";
 import { createClient } from "@/lib/supabase-server";
 import type { PharmacyRow } from "@/lib/types";
@@ -53,6 +54,7 @@ export default async function PharmacyDashboard() {
       title="💊 Pharmacy Dashboard"
       actions={
         <div className="flex items-center gap-2">
+          <ExportButton rows={rows} module="pharmacy" filename={`pharmacy_${new Date().toISOString().slice(0,10)}`} />
           <DeleteAllButton module="pharmacy" totalCount={total} />
           <Link href="/pharmacy/new" className="btn-primary">
             + เพิ่มรายการ

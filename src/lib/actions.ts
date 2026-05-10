@@ -111,6 +111,121 @@ export async function createMaintenanceItem(formData: FormData): Promise<void> {
   redirect(`/maintenance/${item_id}`);
 }
 
+export async function updatePharmacyItem(formData: FormData): Promise<void> {
+  const f = (k: string) => (formData.get(k) as string | null) || null;
+  const supabase = await createClient();
+
+  const item_id = f("item_id");
+  const item_name = f("item_name");
+  if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อยา");
+
+  const location_code = buildLocation([f("zone"), f("shelf")]);
+
+  await supabase
+    .from("locations")
+    .upsert(
+      { location_code, zone: f("zone"), shelf_or_line: f("shelf") },
+      { onConflict: "location_code" },
+    );
+
+  const { error: itemErr } = await supabase
+    .from("items")
+    .update({
+      item_name,
+      category: f("category"),
+      location_code,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("item_id", item_id);
+  if (itemErr) throw new Error(itemErr.message);
+
+  const { error: pErr } = await supabase
+    .from("pharmacy_items")
+    .update({
+      generic_name: f("generic_name"),
+      trade_name: f("trade_name"),
+      lot_no: f("lot_no"),
+      manufacture_date: f("manufacture_date"),
+      expiry_date: f("expiry_date"),
+      quantity: f("quantity") ? Number(f("quantity")) : null,
+      unit: f("unit"),
+      received_date: f("received_date"),
+      supplier: f("supplier"),
+      storage_condition: f("storage_condition"),
+      note: f("note"),
+    })
+    .eq("item_id", item_id);
+  if (pErr) throw new Error(pErr.message);
+
+  await supabase.from("audit_logs").insert({
+    item_id,
+    module_type: "pharmacy",
+    action_type: "update",
+    new_value: { item_name },
+  });
+
+  revalidatePath(`/pharmacy/${item_id}`);
+  revalidatePath("/pharmacy");
+  redirect(`/pharmacy/${item_id}`);
+}
+
+export async function updateMaintenanceItem(formData: FormData): Promise<void> {
+  const f = (k: string) => (formData.get(k) as string | null) || null;
+  const supabase = await createClient();
+
+  const item_id = f("item_id");
+  const item_name = f("item_name");
+  if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อเครื่อง");
+
+  const location_code = buildLocation([f("area"), f("line"), f("position")]);
+
+  await supabase
+    .from("locations")
+    .upsert(
+      { location_code, department_or_area: f("area"), shelf_or_line: f("line"), position: f("position") },
+      { onConflict: "location_code" },
+    );
+
+  const { error: itemErr } = await supabase
+    .from("items")
+    .update({
+      item_name,
+      category: f("machine_type"),
+      location_code,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("item_id", item_id);
+  if (itemErr) throw new Error(itemErr.message);
+
+  const { error: mErr } = await supabase
+    .from("maintenance_items")
+    .update({
+      machine_type: f("machine_type"),
+      serial_no: f("serial_no"),
+      manufacturer: f("manufacturer"),
+      model: f("model"),
+      installation_date: f("installation_date"),
+      last_maintenance_date: f("last_maintenance_date"),
+      next_maintenance_date: f("next_maintenance_date"),
+      maintenance_cycle_days: f("maintenance_cycle_days") ? Number(f("maintenance_cycle_days")) : null,
+      responsible_team: f("responsible_team"),
+      maintenance_note: f("maintenance_note"),
+    })
+    .eq("item_id", item_id);
+  if (mErr) throw new Error(mErr.message);
+
+  await supabase.from("audit_logs").insert({
+    item_id,
+    module_type: "maintenance",
+    action_type: "update",
+    new_value: { item_name },
+  });
+
+  revalidatePath(`/maintenance/${item_id}`);
+  revalidatePath("/maintenance");
+  redirect(`/maintenance/${item_id}`);
+}
+
 export async function deactivateItem(item_id: string, module: "pharmacy" | "maintenance") {
   const supabase = await createClient();
   await supabase.from("items").update({ active_flag: false }).eq("item_id", item_id);

@@ -37,6 +37,9 @@ export default async function PharmacyItemPage({ params }: { params: Promise<{ i
           <Link href="/pharmacy" className="btn-secondary">
             ← กลับ
           </Link>
+          <Link href={`/pharmacy/${r.item_id}/edit`} className="btn-primary">
+            ✏️ แก้ไข
+          </Link>
           <DeleteItemButton itemId={r.item_id} module="pharmacy" itemName={r.item_name} variant="full" />
         </div>
       }

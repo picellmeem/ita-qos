@@ -33,6 +33,9 @@ export default async function MaintenanceItemPage({ params }: { params: Promise<
           <Link href="/maintenance" className="btn-secondary">
             ← กลับ
           </Link>
+          <Link href={`/maintenance/${r.item_id}/edit`} className="btn-primary">
+            ✏️ แก้ไข
+          </Link>
           <DeleteItemButton itemId={r.item_id} module="maintenance" itemName={r.item_name} variant="full" />
         </div>
       }
