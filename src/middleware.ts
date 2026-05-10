@@ -28,14 +28,17 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const path = req.nextUrl.pathname;
-  const isPublic = path === "/login" || path.startsWith("/scan/");
+  const isPublic =
+    path === "/" ||
+    path === "/login" ||
+    path.startsWith("/scan/");
 
   if (!user && !isPublic) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  if (user && path === "/login") {
+  if (user && (path === "/login" || path === "/")) {
     const url = req.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
