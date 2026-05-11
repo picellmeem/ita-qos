@@ -22,8 +22,8 @@ export function SummaryCards({
       {cards.map((c, i) => (
         <div
           key={c.label}
-          className={`group rounded-2xl border ${c.border} ${c.bg} p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg opacity-0 animate-fade-in`}
-          style={{ animationDelay: `${i * 60}ms`, animationFillMode: "forwards" }}
+          className={`group rounded-2xl border ${c.border} ${c.bg} p-5 shadow-sm transition-shadow hover:shadow-md opacity-0 animate-fade-in`}
+          style={{ animationDelay: `${i * 40}ms`, animationFillMode: "forwards" }}
         >
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">

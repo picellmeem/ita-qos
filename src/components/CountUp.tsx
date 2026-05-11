@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function CountUp({
   value,
-  duration = 900,
+  duration = 600,
   className,
 }: {
   value: number;

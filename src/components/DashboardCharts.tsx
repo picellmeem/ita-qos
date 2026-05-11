@@ -1,28 +1,50 @@
 "use client";
-import {
-  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
-  AreaChart, Area,
-} from "recharts";
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
+
+// Lazy load recharts — ลดขนาด bundle หลัก
+const ResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false });
+const PieChart  = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false });
+const Pie       = dynamic(() => import("recharts").then((m) => m.Pie), { ssr: false });
+const Cell      = dynamic(() => import("recharts").then((m) => m.Cell as any), { ssr: false });
+const Tooltip   = dynamic(() => import("recharts").then((m) => m.Tooltip as any), { ssr: false });
+const BarChart  = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false });
+const Bar       = dynamic(() => import("recharts").then((m) => m.Bar), { ssr: false });
+const XAxis     = dynamic(() => import("recharts").then((m) => m.XAxis as any), { ssr: false });
+const YAxis     = dynamic(() => import("recharts").then((m) => m.YAxis as any), { ssr: false });
+const CartesianGrid = dynamic(() => import("recharts").then((m) => m.CartesianGrid as any), { ssr: false });
+const AreaChart = dynamic(() => import("recharts").then((m) => m.AreaChart), { ssr: false });
+const Area      = dynamic(() => import("recharts").then((m) => m.Area), { ssr: false });
 
 const COLORS = {
   green:  "#10b981",
   yellow: "#f59e0b",
   red:    "#ef4444",
   brand:  "#1a56db",
-  brand2: "#0ea5e9",
 };
 
 type StatusData = { name: string; value: number; color: string };
 type CategoryData = { category: string; count: number };
 type TimelineData = { month: string; count: number };
 
+function ChartFallback() {
+  return (
+    <div className="flex h-[220px] items-center justify-center">
+      <div className="h-32 w-32 rounded-full border-4 border-slate-100 border-t-brand-500 animate-spin opacity-40" />
+    </div>
+  );
+}
+
 export function StatusPieChart({ green, yellow, red }: { green: number; yellow: number; red: number }) {
-  const data: StatusData[] = [
-    { name: "🟢 ปกติ",    value: green,  color: COLORS.green },
-    { name: "🟡 เฝ้าระวัง", value: yellow, color: COLORS.yellow },
-    { name: "🔴 ด่วน",     value: red,    color: COLORS.red },
-  ].filter((d) => d.value > 0);
+  const data: StatusData[] = useMemo(
+    () =>
+      [
+        { name: "🟢 ปกติ",    value: green,  color: COLORS.green },
+        { name: "🟡 เฝ้าระวัง", value: yellow, color: COLORS.yellow },
+        { name: "🔴 ด่วน",     value: red,    color: COLORS.red },
+      ].filter((d) => d.value > 0),
+    [green, yellow, red],
+  );
 
   const total = green + yellow + red;
 
@@ -37,22 +59,12 @@ export function StatusPieChart({ green, yellow, red }: { green: number; yellow: 
         <div className="relative">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={2}
-                dataKey="value"
-              >
+              <Pie data={data} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2} dataKey="value">
                 {data.map((entry, i) => (
                   <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />
                 ))}
               </Pie>
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }}
-              />
+              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
@@ -75,29 +87,19 @@ export function StatusPieChart({ green, yellow, red }: { green: number; yellow: 
 }
 
 export function CategoryBarChart({ data, title }: { data: CategoryData[]; title: string }) {
-  const top = data.slice(0, 8);
+  const top = useMemo(() => data.slice(0, 8), [data]);
   return (
     <div className="card h-full">
       <div className="card-title">{title}</div>
       {top.length === 0 ? (
-        <div className="flex h-48 items-center justify-center text-sm text-slate-400">
-          ไม่มีข้อมูล
-        </div>
+        <div className="flex h-48 items-center justify-center text-sm text-slate-400">ไม่มีข้อมูล</div>
       ) : (
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={top} layout="vertical" margin={{ left: 12, right: 16, top: 4, bottom: 4 }}>
             <CartesianGrid horizontal={false} stroke="#f1f5f9" />
             <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-            <YAxis
-              type="category"
-              dataKey="category"
-              tick={{ fill: "#475569", fontSize: 11 }}
-              width={140}
-            />
-            <Tooltip
-              contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }}
-              cursor={{ fill: "#f0f5ff" }}
-            />
+            <YAxis type="category" dataKey="category" tick={{ fill: "#475569", fontSize: 11 }} width={140} />
+            <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }} cursor={{ fill: "#f0f5ff" }} />
             <Bar dataKey="count" fill={COLORS.brand} radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -111,9 +113,7 @@ export function TimelineAreaChart({ data, title }: { data: TimelineData[]; title
     <div className="card h-full">
       <div className="card-title">{title}</div>
       {data.length === 0 ? (
-        <div className="flex h-48 items-center justify-center text-sm text-slate-400">
-          ไม่มีข้อมูล
-        </div>
+        <div className="flex h-48 items-center justify-center text-sm text-slate-400">ไม่มีข้อมูล</div>
       ) : (
         <ResponsiveContainer width="100%" height={260}>
           <AreaChart data={data} margin={{ left: 0, right: 12, top: 8, bottom: 4 }}>
@@ -126,17 +126,8 @@ export function TimelineAreaChart({ data, title }: { data: TimelineData[]; title
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} />
             <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-            <Tooltip
-              contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }}
-              cursor={{ fill: "#f0f5ff" }}
-            />
-            <Area
-              type="monotone"
-              dataKey="count"
-              stroke={COLORS.brand}
-              strokeWidth={2.5}
-              fill="url(#timelineGrad)"
-            />
+            <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2eaff", fontSize: 12 }} cursor={{ fill: "#f0f5ff" }} />
+            <Area type="monotone" dataKey="count" stroke={COLORS.brand} strokeWidth={2.5} fill="url(#timelineGrad)" />
           </AreaChart>
         </ResponsiveContainer>
       )}
