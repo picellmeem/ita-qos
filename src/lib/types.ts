@@ -8,6 +8,8 @@ export type RoleCode =
   | "editor_maintenance"
   | "admin";
 
+export type UserStatus = "pending" | "approved" | "rejected";
+
 export interface Profile {
   user_id: string;
   full_name: string | null;
@@ -15,6 +17,9 @@ export interface Profile {
   role_code: RoleCode | null;
   department: string | null;
   is_active: boolean;
+  status: UserStatus;
+  approved_at: string | null;
+  approved_by: string | null;
 }
 
 export interface PharmacyRow {

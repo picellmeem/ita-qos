@@ -32,6 +32,7 @@ export async function middleware(req: NextRequest) {
     path === "/" ||
     path === "/login" ||
     path === "/signup" ||
+    path === "/pending" ||
     path.startsWith("/scan/");
 
   if (!user && !isPublic) {
@@ -39,11 +40,28 @@ export async function middleware(req: NextRequest) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  if (user && (path === "/login" || path === "/")) {
+
+  if (user && (path === "/login" || path === "/" || path === "/signup")) {
     const url = req.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
   }
+
+  // Block non-approved users from app pages
+  if (user && !isPublic && path !== "/pending") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profile && profile.status !== "approved") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/pending";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return res;
 }
 

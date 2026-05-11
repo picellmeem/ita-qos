@@ -36,7 +36,7 @@ export default async function AppShell({
             <div className="flex shrink-0 items-center gap-2">{actions}</div>
           )}
         </header>
-        <div className="flex-1 px-4 py-5 md:px-7 md:py-6">{children}</div>
+        <div className="flex-1 px-4 py-5 md:px-7 md:py-6 animate-fade-in">{children}</div>
       </main>
     </div>
   );

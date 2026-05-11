@@ -5,28 +5,38 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import type { Profile } from "@/lib/types";
 
-const sections = [
-  {
-    title: "หน้าหลัก",
-    items: [{ href: "/home", label: "Dashboard", icon: "🏠" }],
-  },
-  {
-    title: "โมดูล",
-    items: [
-      { href: "/pharmacy",    label: "Pharmacy",    icon: "💊" },
-      { href: "/maintenance", label: "Maintenance", icon: "⚙️" },
-    ],
-  },
-  {
-    title: "ระบบ",
-    items: [
-      { href: "/nfc",             label: "NFC Mapping",   icon: "📱" },
-      { href: "/print/stickers",  label: "พิมพ์ Stickers", icon: "🏷" },
-      { href: "/import",          label: "Import Data",    icon: "📥" },
-      { href: "/logs",            label: "Audit Log",      icon: "📋" },
-    ],
-  },
-];
+function getSections(roleCode: string | null | undefined) {
+  const base = [
+    {
+      title: "หน้าหลัก",
+      items: [{ href: "/home", label: "Dashboard", icon: "🏠" }],
+    },
+    {
+      title: "โมดูล",
+      items: [
+        { href: "/pharmacy",    label: "Pharmacy",    icon: "💊" },
+        { href: "/maintenance", label: "Maintenance", icon: "⚙️" },
+      ],
+    },
+    {
+      title: "ระบบ",
+      items: [
+        { href: "/nfc",             label: "NFC Mapping",    icon: "📱" },
+        { href: "/print/stickers",  label: "พิมพ์ Stickers",  icon: "🏷" },
+        { href: "/import",          label: "Import Data",     icon: "📥" },
+        { href: "/logs",            label: "Audit Log",       icon: "📋" },
+      ],
+    },
+  ];
+
+  if (roleCode === "admin") {
+    base.push({
+      title: "ดูแลระบบ",
+      items: [{ href: "/users", label: "จัดการผู้ใช้", icon: "👥" }],
+    });
+  }
+  return base;
+}
 
 export default function Sidebar({ profile }: { profile: Profile | null }) {
   const pathname = usePathname();
@@ -46,6 +56,7 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
   }
 
   const initial = (profile?.full_name || profile?.username || "?")[0].toUpperCase();
+  const sections = getSections(profile?.role_code);
 
   return (
     <>
