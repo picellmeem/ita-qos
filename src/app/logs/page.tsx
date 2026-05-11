@@ -1,69 +1,48 @@
 import AppShell from "@/components/AppShell";
 import { createClient } from "@/lib/supabase-server";
+import LogsClient, { type LogRow } from "./LogsClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function LogsPage() {
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // ดึง audit logs + join profile แยก (Supabase ไม่รองรับ join auth schema ตรง)
+  const { data: logs } = await supabase
     .from("audit_logs")
     .select("*")
     .order("changed_at", { ascending: false })
-    .limit(200);
+    .limit(300);
 
-  const rows = data ?? [];
+  const userIds = Array.from(new Set((logs ?? []).map((l) => l.user_id).filter(Boolean)));
+  const { data: profiles } = userIds.length
+    ? await supabase
+        .from("profiles")
+        .select("user_id, full_name, username, role_code")
+        .in("user_id", userIds)
+    : { data: [] as any[] };
+
+  const profileMap = new Map<string, any>();
+  (profiles ?? []).forEach((p) => profileMap.set(p.user_id, p));
+
+  const rows: LogRow[] = (logs ?? []).map((l) => {
+    const profile = l.user_id ? profileMap.get(l.user_id) : null;
+    return {
+      audit_id: l.audit_id,
+      item_id: l.item_id,
+      module_type: l.module_type,
+      action_type: l.action_type,
+      old_value: l.old_value,
+      new_value: l.new_value,
+      changed_at: l.changed_at,
+      user_name: profile?.full_name || profile?.username || null,
+      user_role: profile?.role_code || null,
+    };
+  });
 
   return (
     <AppShell title="📋 Audit Log">
-      <div className="overflow-x-auto rounded-2xl border border-brand-100 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th className="px-4 py-3 text-left">เวลา</th>
-              <th className="px-4 py-3 text-left">Item ID</th>
-              <th className="px-4 py-3 text-left">โมดูล</th>
-              <th className="px-4 py-3 text-left">Action</th>
-              <th className="px-4 py-3 text-left">รายละเอียด</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-slate-400">
-                  ยังไม่มีรายการ
-                </td>
-              </tr>
-            ) : (
-              rows.map((r) => {
-                const cls =
-                  r.action_type === "create" ? "badge-green" :
-                  r.action_type === "deactivate" ? "badge-red" : "badge-gray";
-                return (
-                  <tr key={r.audit_id} className="border-t border-brand-100">
-                    <td className="px-4 py-3 text-xs text-slate-600">
-                      {new Date(r.changed_at).toLocaleString("th-TH")}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-xs font-semibold text-brand-500">
-                        {r.item_id || "-"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="badge badge-gray">{r.module_type || "-"}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`badge ${cls}`}>{r.action_type || "-"}</span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
-                      {r.new_value ? JSON.stringify(r.new_value) : "-"}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <LogsClient rows={rows} />
     </AppShell>
   );
 }

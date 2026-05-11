@@ -8,6 +8,12 @@ function buildLocation(parts: (string | null | undefined)[]) {
   return code || "UNSPECIFIED";
 }
 
+async function currentUserId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 export async function createPharmacyItem(formData: FormData): Promise<void> {
   const f = (k: string) => (formData.get(k) as string | null) || null;
   const supabase = await createClient();
@@ -48,11 +54,21 @@ export async function createPharmacyItem(formData: FormData): Promise<void> {
   });
   if (pErr) throw new Error(pErr.message);
 
+  const uid = await currentUserId();
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: "pharmacy",
     action_type: "create",
-    new_value: { item_name },
+    new_value: {
+      item_name,
+      category: f("category"),
+      lot_no: f("lot_no"),
+      expiry_date: f("expiry_date"),
+      quantity: f("quantity"),
+      unit: f("unit"),
+      location: location_code,
+    },
   });
 
   revalidatePath("/pharmacy");
@@ -100,11 +116,20 @@ export async function createMaintenanceItem(formData: FormData): Promise<void> {
   });
   if (mErr) throw new Error(mErr.message);
 
+  const uid = await currentUserId();
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: "maintenance",
     action_type: "create",
-    new_value: { item_name },
+    new_value: {
+      item_name,
+      machine_type: f("machine_type"),
+      serial_no: f("serial_no"),
+      manufacturer: f("manufacturer"),
+      next_maintenance_date: f("next_maintenance_date"),
+      location: location_code,
+    },
   });
 
   revalidatePath("/maintenance");
@@ -120,6 +145,13 @@ export async function updatePharmacyItem(formData: FormData): Promise<void> {
   if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อยา");
 
   const location_code = buildLocation([f("zone"), f("shelf")]);
+
+  // ดึงข้อมูลเก่าก่อน update เพื่อบันทึก diff
+  const { data: oldRow } = await supabase
+    .from("v_pharmacy")
+    .select("item_name, category, lot_no, expiry_date, quantity, unit, location_code, supplier")
+    .eq("item_id", item_id)
+    .maybeSingle();
 
   await supabase
     .from("locations")
@@ -157,11 +189,24 @@ export async function updatePharmacyItem(formData: FormData): Promise<void> {
     .eq("item_id", item_id);
   if (pErr) throw new Error(pErr.message);
 
+  const uid = await currentUserId();
+  const newRow = {
+    item_name,
+    category: f("category"),
+    lot_no: f("lot_no"),
+    expiry_date: f("expiry_date"),
+    quantity: f("quantity"),
+    unit: f("unit"),
+    location_code,
+    supplier: f("supplier"),
+  };
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: "pharmacy",
     action_type: "update",
-    new_value: { item_name },
+    old_value: oldRow,
+    new_value: newRow,
   });
 
   revalidatePath(`/pharmacy/${item_id}`);
@@ -178,6 +223,12 @@ export async function updateMaintenanceItem(formData: FormData): Promise<void> {
   if (!item_id || !item_name) throw new Error("ต้องระบุ Item ID และชื่อเครื่อง");
 
   const location_code = buildLocation([f("area"), f("line"), f("position")]);
+
+  const { data: oldRow } = await supabase
+    .from("v_maintenance")
+    .select("item_name, machine_type, serial_no, manufacturer, model, last_maintenance_date, next_maintenance_date, maintenance_cycle_days, responsible_team, location_code")
+    .eq("item_id", item_id)
+    .maybeSingle();
 
   await supabase
     .from("locations")
@@ -214,11 +265,26 @@ export async function updateMaintenanceItem(formData: FormData): Promise<void> {
     .eq("item_id", item_id);
   if (mErr) throw new Error(mErr.message);
 
+  const uid = await currentUserId();
+  const newRow = {
+    item_name,
+    machine_type: f("machine_type"),
+    serial_no: f("serial_no"),
+    manufacturer: f("manufacturer"),
+    model: f("model"),
+    last_maintenance_date: f("last_maintenance_date"),
+    next_maintenance_date: f("next_maintenance_date"),
+    maintenance_cycle_days: f("maintenance_cycle_days"),
+    responsible_team: f("responsible_team"),
+    location_code,
+  };
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: "maintenance",
     action_type: "update",
-    new_value: { item_name },
+    old_value: oldRow,
+    new_value: newRow,
   });
 
   revalidatePath(`/maintenance/${item_id}`);
@@ -228,9 +294,11 @@ export async function updateMaintenanceItem(formData: FormData): Promise<void> {
 
 export async function deactivateItem(item_id: string, module: "pharmacy" | "maintenance") {
   const supabase = await createClient();
+  const uid = await currentUserId();
   await supabase.from("items").update({ active_flag: false }).eq("item_id", item_id);
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: module,
     action_type: "deactivate",
   });
@@ -254,8 +322,10 @@ export async function deleteItem(item_id: string, module: "pharmacy" | "maintena
   const { error } = await supabase.from("items").delete().eq("item_id", item_id);
   if (error) return { error: error.message };
 
+  const uid = await currentUserId();
   await supabase.from("audit_logs").insert({
     item_id,
+    user_id: uid,
     module_type: module,
     action_type: "delete",
     old_value: itemRow ? { item_name: itemRow.item_name } : null,
@@ -287,10 +357,12 @@ export async function deleteAllInModule(module: "pharmacy" | "maintenance", conf
   const { error } = await supabase.from("items").delete().in("item_id", ids);
   if (error) return { error: error.message };
 
+  const uid = await currentUserId();
   await supabase.from("audit_logs").insert({
+    user_id: uid,
     module_type: module,
     action_type: "delete_all",
-    old_value: { count: ids.length },
+    old_value: { count: ids.length, deleted_ids: ids.slice(0, 50) },
   });
 
   revalidatePath(`/${module}`);
