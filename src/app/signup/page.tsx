@@ -58,7 +58,7 @@ export default function SignupPage() {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-white px-4">
         <ColorfulBackground />
-        <div className="relative z-10 w-full max-w-sm">
+        <div className="relative z-10 w-full max-w-sm animate-scale-in">
           <div className="rounded-2xl border border-white/60 bg-white/75 p-6 text-center shadow-2xl backdrop-blur-xl">
             <div className="text-4xl">📧</div>
             <h1 className="mt-3 text-lg font-bold text-brand-900">
@@ -81,7 +81,7 @@ export default function SignupPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-white px-4 py-8">
       <ColorfulBackground />
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm animate-scale-in">
         <div className="mb-6 text-center">
           <div className="text-2xl font-bold text-brand-900">ITA-QOS</div>
           <div className="mt-1 text-xs text-slate-500">

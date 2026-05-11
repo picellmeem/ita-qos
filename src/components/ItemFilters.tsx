@@ -106,7 +106,10 @@ export default function ItemFilters({
               </tr>
             ) : (
               paged.map((r) => (
-                <tr key={r.item_id} className="border-t border-brand-100 hover:bg-brand-50/40">
+                <tr
+                  key={r.item_id}
+                  className="border-t border-brand-100 hover:bg-brand-50/60 hover:shadow-inner cursor-pointer"
+                >
                   <td className="px-4 py-3">
                     <span className="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-xs font-semibold text-brand-500">
                       {r.item_id}

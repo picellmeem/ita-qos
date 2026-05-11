@@ -21,7 +21,7 @@ export default async function HomePage() {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="stagger grid gap-5 md:grid-cols-2">
         <Link
           href="/pharmacy"
           className="group block rounded-2xl border border-brand-100 bg-white p-7 shadow-sm transition hover:border-brand-500 hover:shadow-md"

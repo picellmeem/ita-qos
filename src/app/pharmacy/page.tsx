@@ -70,7 +70,7 @@ export default async function PharmacyDashboard() {
 
       <SummaryCards total={total} green={green} yellow={yellow} red={red} />
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="stagger mt-6 grid gap-4 lg:grid-cols-3">
         <StatusPieChart green={green} yellow={yellow} red={red} />
         <CategoryBarChart data={categoryData} title="จำนวนยาตามหมวดหมู่" />
         <TimelineAreaChart data={timelineData} title="ปริมาณยาที่จะหมดอายุ (6 เดือนข้างหน้า)" />
