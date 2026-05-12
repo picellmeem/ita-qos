@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { StatusBadge } from "./StatusBadge";
 import DeleteItemButton from "./DeleteItemButton";
 import { fmtDate } from "@/lib/status";
@@ -26,8 +27,19 @@ export default function ItemFilters({
   rows: Row[];
   dateLabel: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const filter = (searchParams.get("status") as "all" | StatusColor | null) ?? "all";
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<"all" | StatusColor>("all");
+
+  function setFilter(s: "all" | StatusColor) {
+    const next = new URLSearchParams(searchParams);
+    if (s === "all") next.delete("status");
+    else next.set("status", s);
+    const qs = next.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
 
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;

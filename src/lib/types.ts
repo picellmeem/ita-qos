@@ -6,6 +6,8 @@ export type RoleCode =
   | "editor_pharmacy"
   | "viewer_maintenance"
   | "editor_maintenance"
+  | "viewer_all"
+  | "editor_all"
   | "admin";
 
 export type UserStatus = "pending" | "approved" | "rejected";

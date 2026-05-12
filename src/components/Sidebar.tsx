@@ -6,18 +6,18 @@ import { createClient } from "@/lib/supabase-browser";
 import type { Profile } from "@/lib/types";
 
 function getSections(roleCode: string | null | undefined) {
-  const base = [
-    {
-      title: "หน้าหลัก",
-      items: [{ href: "/home", label: "Dashboard", icon: "🏠" }],
-    },
-    {
-      title: "โมดูล",
-      items: [
-        { href: "/pharmacy",    label: "Pharmacy",    icon: "💊" },
-        { href: "/maintenance", label: "Maintenance", icon: "⚙️" },
-      ],
-    },
+  const isPharmacyOnly  = roleCode === "viewer_pharmacy"  || roleCode === "editor_pharmacy";
+  const isMaintOnly     = roleCode === "viewer_maintenance" || roleCode === "editor_maintenance";
+  const showPharmacy    = !isMaintOnly;
+  const showMaintenance = !isPharmacyOnly;
+
+  const moduleItems: { href: string; label: string; icon: string }[] = [];
+  if (showPharmacy)    moduleItems.push({ href: "/pharmacy",    label: "Pharmacy",    icon: "💊" });
+  if (showMaintenance) moduleItems.push({ href: "/maintenance", label: "Maintenance", icon: "⚙️" });
+
+  const base: { title: string; items: { href: string; label: string; icon: string }[] }[] = [
+    { title: "หน้าหลัก", items: [{ href: "/home", label: "Dashboard", icon: "🏠" }] },
+    { title: "โมดูล", items: moduleItems },
     {
       title: "ระบบ",
       items: [

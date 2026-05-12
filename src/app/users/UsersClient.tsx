@@ -5,11 +5,13 @@ import { createClient } from "@/lib/supabase-browser";
 import type { Profile, RoleCode } from "@/lib/types";
 
 const ROLE_OPTIONS: { value: RoleCode; label: string; color: string }[] = [
-  { value: "viewer_pharmacy",    label: "Viewer - Pharmacy",     color: "bg-slate-100 text-slate-600" },
-  { value: "editor_pharmacy",    label: "Editor - Pharmacy",     color: "bg-pink-100 text-pink-700" },
-  { value: "viewer_maintenance", label: "Viewer - Maintenance",  color: "bg-slate-100 text-slate-600" },
+  { value: "viewer_pharmacy",    label: "Viewer - Pharmacy",     color: "bg-slate-100 text-slate-600"   },
+  { value: "editor_pharmacy",    label: "Editor - Pharmacy",     color: "bg-pink-100 text-pink-700"     },
+  { value: "viewer_maintenance", label: "Viewer - Maintenance",  color: "bg-slate-100 text-slate-600"   },
   { value: "editor_maintenance", label: "Editor - Maintenance",  color: "bg-violet-100 text-violet-700" },
-  { value: "admin",              label: "Admin",                 color: "bg-amber-100 text-amber-700" },
+  { value: "viewer_all",         label: "Viewer - All Modules",  color: "bg-sky-100 text-sky-700"       },
+  { value: "editor_all",         label: "Editor - All Modules",  color: "bg-indigo-100 text-indigo-700" },
+  { value: "admin",              label: "Admin",                 color: "bg-amber-100 text-amber-700"   },
 ];
 
 function roleLabel(code: string | null) {
