@@ -1,20 +1,10 @@
 "use client";
-import dynamic from "next/dynamic";
 import { useMemo } from "react";
-
-// Lazy load recharts — ลดขนาด bundle หลัก
-const ResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false });
-const PieChart  = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false });
-const Pie       = dynamic(() => import("recharts").then((m) => m.Pie), { ssr: false });
-const Cell      = dynamic(() => import("recharts").then((m) => m.Cell as any), { ssr: false });
-const Tooltip   = dynamic(() => import("recharts").then((m) => m.Tooltip as any), { ssr: false });
-const BarChart  = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false });
-const Bar       = dynamic(() => import("recharts").then((m) => m.Bar), { ssr: false });
-const XAxis     = dynamic(() => import("recharts").then((m) => m.XAxis as any), { ssr: false });
-const YAxis     = dynamic(() => import("recharts").then((m) => m.YAxis as any), { ssr: false });
-const CartesianGrid = dynamic(() => import("recharts").then((m) => m.CartesianGrid as any), { ssr: false });
-const AreaChart = dynamic(() => import("recharts").then((m) => m.AreaChart), { ssr: false });
-const Area      = dynamic(() => import("recharts").then((m) => m.Area), { ssr: false });
+import {
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area,
+} from "recharts";
 
 const COLORS = {
   green:  "#10b981",
@@ -26,14 +16,6 @@ const COLORS = {
 type StatusData = { name: string; value: number; color: string };
 type CategoryData = { category: string; count: number };
 type TimelineData = { month: string; count: number };
-
-function ChartFallback() {
-  return (
-    <div className="flex h-[220px] items-center justify-center">
-      <div className="h-32 w-32 rounded-full border-4 border-slate-100 border-t-brand-500 animate-spin opacity-40" />
-    </div>
-  );
-}
 
 export function StatusPieChart({ green, yellow, red }: { green: number; yellow: number; red: number }) {
   const data: StatusData[] = useMemo(
